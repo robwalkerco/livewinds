@@ -21,9 +21,9 @@ provider:
   name: aws
   runtime: nodejs6.10
   region: eu-west-1
-  # stage: dev
   profile: serverless-admin
   timeout: 20
+  versionFunctions: false
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     USER_AGENT: "livewinds.com"
@@ -47,11 +47,18 @@ package:
 #    - exclude-me.js
 #    - exclude-me-dir/**
 
+custom:
+  drscScrape:
+    dev:
+      schedule: rate(1 day)
+    production:
+      schedule: rate(1 minute)
+
 functions:
   drscScrape:
     handler: handlers/drscScrape.default
     events:
-      - schedule: rate(1 minute)
+      - schedule: ${self:custom.drscScrape.${opt:stage, self:provider.stage}.schedule}
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
