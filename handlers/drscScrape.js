@@ -1,11 +1,11 @@
 import { JSDOM } from 'jsdom'
 import moment from 'moment'
-import AWS from 'aws-sdk'
+import { DynamoDB } from 'aws-sdk'
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient()
+const dynamoDb = new DynamoDB.DocumentClient()
 
 const sourceUrl = 'https://drsc.co.uk/'
-const userAgent = 'livewinds.com wind spider'
+const userAgent = process.env.USER_AGENT
 
 const getWeatherSection = dom => dom.window.document.querySelector('.weather')
 

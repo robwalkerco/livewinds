@@ -26,6 +26,7 @@ provider:
   timeout: 20
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    USER_AGENT: "livewinds.com"
   iamRoleStatements:
     - Effect: Allow
       Action:
