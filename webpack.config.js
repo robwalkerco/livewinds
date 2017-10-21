@@ -1,16 +1,16 @@
-const slsw = require("serverless-webpack");
+const slsw = require('serverless-webpack')
 
 module.exports = {
   entry: slsw.lib.entries,
-  target: "node",
+  target: 'node',
   module: {
     loaders: [
       {
         test: /\.js$/,
-        loaders: ["babel-loader"],
+        loaders: ['babel-loader'],
         include: __dirname,
-        exclude: /node_modules/
-      }
-    ]
-  }
-};
+        exclude: /node_modules/,
+      },
+    ],
+  },
+}
