@@ -56,7 +56,7 @@ package:
 
 functions:
   drscScrape:
-    handler: handlers/drscScrape.handler
+    handler: handlers/drscScrape.default
     # events:
     #   - schedule:
     #     - name: drsc-scrape-schedule

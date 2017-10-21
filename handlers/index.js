@@ -1,5 +1,5 @@
-import drscScrape from "./drscScrape";
+import drscScrape from './drscScrape'
 
 export default {
-  drscScrape
-};
+  drscScrape,
+}
