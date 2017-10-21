@@ -1,5 +1,8 @@
 import { JSDOM } from 'jsdom'
 import moment from 'moment'
+import AWS from 'aws-sdk'
+
+const dynamoDb = new AWS.DynamoDB.DocumentClient()
 
 const sourceUrl = 'https://drsc.co.uk/'
 const userAgent = 'livewinds.com wind spider'
@@ -31,8 +34,9 @@ const getUpdatedTime = dom =>
 
 const handler = (event, context, callback) => {
   JSDOM.fromURL(sourceUrl, { userAgent }).then(dom => {
-    callback(null, {
-      message: {
+    const doc = {
+      TableName: process.env.DYNAMODB_TABLE,
+      Item: {
         station: 'drsc',
         windDirection: getValueFor(dom, 'Wind Direction'),
         windSpeedAverage: getAverageWind(dom),
@@ -41,9 +45,17 @@ const handler = (event, context, callback) => {
         temperature: getTempValueFor(dom, 'Temperature'),
         feelsLike: getTempValueFor(dom, 'Feels Like'),
         tempUnit: 'celsius',
-        updatedTime: getUpdatedTime(dom),
+        timestamp: getUpdatedTime(dom),
       },
-      event,
+    }
+
+    dynamoDb.put(doc, error => {
+      // handle potential errors
+      if (error) {
+        return callback(process.env.DYNAMODB_TABLE)
+      }
+
+      callback(null, 'success')
     })
   })
   // const response = {
