@@ -18,7 +18,7 @@ const getAverageWind = dom => Math.round(getValueFor(dom, 'Wind Speed').split(' 
 
 const getGustWind = dom => Math.round(getValueFor(dom, 'Wind Speed').match(/- (\d+)/)[1])
 
-const getTempValueFor = (dom, key) => Math.round(getValueFor(dom, key).replace('°C', ''))
+const getTempValueFor = (dom, key) => parseFloat(getValueFor(dom, key).replace('°C', ''))
 
 const getUpdatedTime = dom =>
   moment()
@@ -34,29 +34,24 @@ const getUpdatedTime = dom =>
 
 const handler = (event, context, callback) => {
   JSDOM.fromURL(sourceUrl, { userAgent }).then(dom => {
-    const doc = {
-      TableName: process.env.DYNAMODB_TABLE,
-      Item: {
-        station: 'drsc',
-        windDirection: getValueFor(dom, 'Wind Direction'),
-        windSpeedAverage: getAverageWind(dom),
-        windSpeedGust: getGustWind(dom),
-        windSpeedUnit: 'mph',
-        temperature: getTempValueFor(dom, 'Temperature'),
-        feelsLike: getTempValueFor(dom, 'Feels Like'),
-        tempUnit: 'celsius',
-        timestamp: getUpdatedTime(dom),
-      },
+    const item = {
+      station: 'drsc',
+      windDirection: getValueFor(dom, 'Wind Direction'),
+      windSpeedAverage: getAverageWind(dom),
+      windSpeedGust: getGustWind(dom),
+      windSpeedUnit: 'mph',
+      temperature: getTempValueFor(dom, 'Temperature'),
+      feelsLike: getTempValueFor(dom, 'Feels Like'),
+      tempUnit: 'celsius',
+      timestamp: getUpdatedTime(dom),
     }
 
-    dynamoDb.put(doc, error => {
-      // handle potential errors
-      if (error) {
-        return callback(process.env.DYNAMODB_TABLE)
-      }
+    const doc = {
+      TableName: process.env.DYNAMODB_TABLE,
+      Item: item,
+    }
 
-      callback(null, 'success')
-    })
+    dynamoDb.put(doc, error => (error && callback(error)) || callback(null, item))
   })
   // const response = {
   //   statusCode: 200,

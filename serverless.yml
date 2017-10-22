@@ -27,6 +27,8 @@ provider:
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     USER_AGENT: "livewinds.com"
+  apiKeys:
+    - ${self:service}-${opt:stage, self:provider.stage}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -59,6 +61,13 @@ functions:
     handler: handlers/drscScrape.default
     events:
       - schedule: ${self:custom.drscScrape.${opt:stage, self:provider.stage}.schedule}
+  fetchLatest:
+    handler: handlers/fetchLatest.default
+    events:
+      - http:
+          path: latest
+          method: get
+          private: true
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
