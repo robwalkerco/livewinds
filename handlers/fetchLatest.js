@@ -1,8 +1,10 @@
 import { DynamoDB } from 'aws-sdk'
+import weatherTransformer from '../transformers/weather'
 
 const dynamoDb = new DynamoDB.DocumentClient()
 
 const handler = (event, context, callback) => {
+  const station = event.pathParameters.station
   const maxMinutes = 600
   const defaultMinutes = 100
 
@@ -11,21 +13,16 @@ const handler = (event, context, callback) => {
   let validationError
 
   // Check the requestes minutes are not greater than the default
-  if (event.queryStringParameters.minutes && event.queryStringParameters.minutes > maxMinutes) {
+  if (
+    event.queryStringParameters &&
+    event.queryStringParameters.minutes &&
+    event.queryStringParameters.minutes > maxMinutes
+  ) {
     validationError = {
       statusCode: 400,
       body: JSON.stringify({
         message: `Param 'minutes' must not be greater that ${maxMinutes}`,
-      }),
-    }
-  }
-
-  // Check the station is set
-  if (!event.queryStringParameters.station) {
-    validationError = {
-      statusCode: 400,
-      body: JSON.stringify({
-        message: 'Param \'station\' is required',
+        code: 'param_error',
       }),
     }
   }
@@ -36,15 +33,15 @@ const handler = (event, context, callback) => {
 
   // PROCESS
   const params = {
-    TableName: process.env.DYNAMODB_TABLE,
+    TableName: process.env.DYNAMODB_WEATHER_TABLE,
     KeyConditionExpression: '#station = :station',
     ExpressionAttributeNames: {
       '#station': 'station',
     },
     ExpressionAttributeValues: {
-      ':station': event.queryStringParameters.station,
+      ':station': station,
     },
-    Limit: event.queryStringParameters.minutes || defaultMinutes,
+    Limit: (event.queryStringParameters && event.queryStringParameters.minutes) || defaultMinutes,
     ScanIndexForward: true,
   }
   return dynamoDb.query(params, (error, data) => {
@@ -55,6 +52,7 @@ const handler = (event, context, callback) => {
         statusCode: 500,
         body: JSON.stringify({
           message: error,
+          code: 'system_error',
         }),
       }
     }
@@ -62,7 +60,7 @@ const handler = (event, context, callback) => {
       response = {
         statusCode: 200,
         body: JSON.stringify({
-          data: data.Items,
+          data: data.Items.map(weather => weatherTransformer(station, weather)),
         }),
       }
     }

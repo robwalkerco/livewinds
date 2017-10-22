@@ -1,6 +1,6 @@
 {
-  "resource": "/latest",
-  "path": "/latest",
+  "resource": "/stations/{code}",
+  "path": "/stations/drsc",
   "httpMethod": "GET",
   "headers": {
     "Accept": "*/*",
@@ -14,30 +14,28 @@
     "CloudFront-Is-Tablet-Viewer": "false",
     "CloudFront-Viewer-Country": "GB",
     "Host": "jqs5f5wrsh.execute-api.eu-west-1.amazonaws.com",
-    "postman-token": "0e5a5f11-af61-2478-72b0-a7fc3f1eb5a7",
+    "postman-token": "4e71c9ae-2c16-d346-3579-7684ac9245e8",
     "User-Agent":
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36",
-    "Via": "2.0 bc30b374b64a194ed68c5b62e617bac6.cloudfront.net (CloudFront)",
-    "X-Amz-Cf-Id": "DUsL-aHzRLfPlFtVva2NsJa5PhpC9pldhSI6AszOn2i8ClRgrWlRSg==",
-    "X-Amzn-Trace-Id": "Root=1-59ecfbda-57d3b1835380fd7141457a9e",
+    "Via": "2.0 7cddfedd82c4e2198668a64be4934fd0.cloudfront.net (CloudFront)",
+    "X-Amz-Cf-Id": "MhNpAp0YypRmk7Q_oRG3m_fIOZAMDTnblbxZMlVpcVdhmBI1zex-Rw==",
+    "X-Amzn-Trace-Id": "Root=1-59ed0bda-12e5d8fc2118ba87135392e5",
     "x-api-key": "jNzW5AoYra3JcFlaouDuy2A1DqZTx02WRMYkhixc",
-    "X-Forwarded-For": "92.4.117.116, 216.137.62.69",
+    "X-Forwarded-For": "92.4.117.116, 216.137.62.80",
     "X-Forwarded-Port": "443",
     "X-Forwarded-Proto": "https"
   },
-  "queryStringParameters": {
-    "minutes": "120"
-  },
+  "queryStringParameters": null,
   "pathParameters": {
     "station": "drsc"
   },
   "stageVariables": null,
   "requestContext": {
-    "path": "/dev/latest",
+    "path": "/dev/stations/drsc",
     "accountId": "151526702082",
-    "resourceId": "6wzxtg",
+    "resourceId": "9f4eqe",
     "stage": "dev",
-    "requestId": "6f6eed45-b765-11e7-b561-d19a45380156",
+    "requestId": "f8708a58-b76e-11e7-89cd-4bb53918644a",
     "identity": {
       "cognitoIdentityPoolId": null,
       "accountId": null,
@@ -53,7 +51,7 @@
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36",
       "user": null
     },
-    "resourcePath": "/latest",
+    "resourcePath": "/stations/{code}",
     "httpMethod": "GET",
     "apiId": "jqs5f5wrsh"
   },

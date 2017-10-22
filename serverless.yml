@@ -25,8 +25,10 @@ provider:
   timeout: 20
   versionFunctions: false
   environment:
-    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    DYNAMODB_STATIONS_TABLE: ${self:service}-stations-${opt:stage, self:provider.stage}
+    DYNAMODB_WEATHER_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     USER_AGENT: "livewinds.com"
+    FULL_PATH: ${self:custom.full_path.${opt:stage, self:provider.stage}}
   apiKeys:
     - ${self:service}-${opt:stage, self:provider.stage}
   iamRoleStatements:
@@ -38,7 +40,16 @@ provider:
         - dynamodb:PutItem
         # - dynamodb:UpdateItem
         # - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_WEATHER_TABLE}"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        # - dynamodb:PutItem
+        # - dynamodb:UpdateItem
+        # - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_STATIONS_TABLE}"
 
 package:
   individually: true
@@ -50,6 +61,9 @@ package:
 #    - exclude-me-dir/**
 
 custom:
+  full_path:
+    dev: 'https://jqs5f5wrsh.execute-api.eu-west-1.amazonaws.com/dev'
+    production: 'https://f3fzawc1di.execute-api.eu-west-1.amazonaws.com/production'
   drscScrape:
     dev:
       schedule: rate(1 day)
@@ -61,54 +75,62 @@ functions:
     handler: handlers/drscScrape.default
     events:
       - schedule: ${self:custom.drscScrape.${opt:stage, self:provider.stage}.schedule}
+  docs:
+    handler: handlers/docs.default
+    events:
+      - http:
+          path: /
+          method: get
+          private: true
+  fetchStations:
+    handler: handlers/fetchStations.default
+    events:
+      - http:
+          path: v1/stations
+          method: get
+          private: true
+  fetchStation:
+    handler: handlers/fetchStation.default
+    events:
+      - http:
+          path: v1/stations/{station}
+          method: get
+          private: true
+          request:
+            parameters:
+              paths:
+                station: true
   fetchLatest:
     handler: handlers/fetchLatest.default
     events:
       - http:
-          path: latest
+          path: v1/stations/{station}/latest
           method: get
           private: true
+          request:
+            parameters:
+              paths:
+                station: true
+  fetchWeatherItem:
+    handler: handlers/fetchWeatherItem.default
+    events:
+      - http:
+          path: v1/stations/{station}/weather/{timestamp}
+          method: get
+          private: true
+          request:
+            parameters:
+              paths:
+                station: true
+                timestamp: true
 
-#    The following are a few example events you can configure
-#    NOTE: Please make sure to change your handler code to work with those events
-#    Check the event documentation for details
-#    events:
-#      - http:
-#          path: users/create
-#          method: get
-#      - s3: ${env:BUCKET}
-#      - schedule: rate(10 minutes)
-#      - sns: greeter-topic
-#      - stream: arn:aws:dynamodb:region:XXXXXX:table/foo/stream/1970-01-01T00:00:00.000
-#      - alexaSkill
-#      - iot:
-#          sql: "SELECT * FROM 'some_topic'"
-#      - cloudwatchEvent:
-#          event:
-#            source:
-#              - "aws.ec2"
-#            detail-type:
-#              - "EC2 Instance State-change Notification"
-#            detail:
-#              state:
-#                - pending
-#      - cloudwatchLog: '/aws/lambda/hello'
-#      - cognitoUserPool:
-#          pool: MyUserPool
-#          trigger: PreSignUp
-
-#    Define function environment variables here
-#    environment:
-#      variable2: value2
-
-# you can add CloudFormation resource templates here
 resources:
   Resources:
     LivewindsDynamoDbTable:
       Type: "AWS::DynamoDB::Table"
       DeletionPolicy: Retain
       Properties:
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        TableName: ${self:provider.environment.DYNAMODB_WEATHER_TABLE}
         AttributeDefinitions:
         -
           AttributeName: "station"
@@ -123,6 +145,22 @@ resources:
           -
             AttributeName: "timestamp"
             KeyType: "RANGE"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+    LivewindsStationsDynamoDbTable:
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_STATIONS_TABLE}
+        AttributeDefinitions:
+        -
+          AttributeName: "station"
+          AttributeType: "S"
+        KeySchema:
+          -
+            AttributeName: "station"
+            KeyType: "HASH"
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1

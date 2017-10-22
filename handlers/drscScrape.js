@@ -47,7 +47,7 @@ const handler = (event, context, callback) => {
     }
 
     const doc = {
-      TableName: process.env.DYNAMODB_TABLE,
+      TableName: process.env.DYNAMODB_WEATHER_TABLE,
       Item: item,
     }
 
